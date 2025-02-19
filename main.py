@@ -6,10 +6,10 @@ NOTION_API_KEY = "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"
 
 # ✅ 你的 Notion 数据库 ID
 DATABASE_IDS = {
-    "Area": "185bdd3556c281afa4b2000c96fa09b3",
-    "Target": "185bdd3556c281928b3e000cb336d45d",
-    "Project": "185bdd3556c28150a997000cb80497ec",
-    "Task": "185bdd3556c28105af6a000c6897a3f6"
+    "Area": "185bdd3556c2817db031cd1968322da2",
+    "Target": "185bdd3556c281c0aa62e144d27e84d0",
+    "Project": "185bdd3556c281779e79dabe472407a1",
+    "Task": "185bdd3556c281499a2cc84e2144fd2c"
 }
 
 # ✅ Notion API Headers
@@ -23,6 +23,8 @@ HEADERS = {
 def fetch_database_items(database_id):
     url = f"https://api.notion.com/v1/databases/{database_id}/query"
     response = requests.post(url, headers=HEADERS)
+    print("🔹 API 返回状态码:", response.status_code)
+    print("🔹 API 返回数据:", response.json())
     return response.json().get("results", [])
 
 # ✅ 获取所有层级数据
@@ -30,6 +32,7 @@ area_data = fetch_database_items(DATABASE_IDS["Area"])
 target_data = fetch_database_items(DATABASE_IDS["Target"])
 project_data = fetch_database_items(DATABASE_IDS["Project"])
 task_data = fetch_database_items(DATABASE_IDS["Task"])
+print(area_data, target_data, project_data, task_data)
 
 # ✅ 创建一个映射存储层级关系
 area_map = {}  # 存储 Area -> Target
@@ -82,6 +85,7 @@ for area in area_data:
     build_mermaid_graph(area_id, area_map)
 
 # ✅ 将 Mermaid 代码写入文件
+print(mermaid_code)
 with open("notion_mermaid_diagram.md", "w") as file:
     file.write(f"```mermaid\n{mermaid_code}\n```")
 
