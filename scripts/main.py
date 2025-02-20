@@ -1,19 +1,21 @@
 import requests
 import os
 import json
+from dotenv import load_dotenv, find_dotenv
 
-# ✅ 你的 Notion API Key
-NOTION_API_KEY = "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"
+# 找到主目录的 .env 文件
+dotenv_path = find_dotenv()
+load_dotenv(dotenv_path)  
 
-# ✅ 你的 Notion 数据库 ID
+NOTION_API_KEY = os.getenv("NOTION_API_KEY")
 DATABASE_IDS = {
-    "Area": "185bdd3556c2817db031cd1968322da2",
-    "Target": "185bdd3556c281c0aa62e144d27e84d0",
-    "Project": "185bdd3556c281779e79dabe472407a1",
-    "Task": "185bdd3556c281499a2cc84e2144fd2c",
-    "Dashboard": "185bdd3556c2819ab6d3ec98eb28d44c"
+    "Area": os.getenv("NOTION_DATABASE_ID_AREA"),
+    "Target": os.getenv("NOTION_DATABASE_ID_TARGET"),
+    "Project": os.getenv("NOTION_DATABASE_ID_PROJECT"),
+    "Task": os.getenv("NOTION_DATABASE_ID_TASK"),
+    "Dashboard": os.getenv("NOTION_DATABASE_ID_DASHBOARD")
 }
-CODE_BLOCK_ID = '1a0bdd35-56c2-80bf-97f5-cdc66b736b59'
+CODE_BLOCK_ID = os.getenv("CODE_BLOCK_ID")
 
 # ✅ Notion API Headers
 HEADERS = {
@@ -92,20 +94,24 @@ for area in sorted(area_data, key=lambda x: x["properties"]["Name"]["title"][0][
     # mermaid_code += f'  click {area_id} "{notion_links[area_id]}"\n'
     build_mermaid_graph(area_id, area_name, area_map)
 
+# 确保 docs 文件夹路径正确
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 获取 main 目录
+DOCS_PATH = os.path.join(BASE_DIR, "docs", "notion_mermaid_diagram.md")
+
 # ✅ 将 Mermaid 代码写入文件
-with open("notion_mermaid_diagram.md", "w") as file:
+with open(DOCS_PATH, "w") as file:
     file.write(f"```mermaid\n{mermaid_code}\n```")
 
-print("✅ Mermaid.js 代码已生成！请查看 notion_mermaid_diagram.md")
+print(f"✅ Mermaid.js 代码已生成！请查看 {DOCS_PATH}")
 
 # ✅ 读取 Mermaid.js 代码
-with open("notion_mermaid_diagram.md", "r") as file:
+with open(DOCS_PATH, "r") as file:
     mermaid_code = file.read()
 
 # ✅ 发送更新请求（更新已有代码块内容）
 payload = {
     "code": {
-        "rich_text": [{"type": "text", "text": {"content": mermaid_code}}],
+        "rich_text": [{"type": "text", "text": {"content": mermaid_code.replace("```mermaid\n", "")}}],
         "language": "mermaid"
     }
 }
