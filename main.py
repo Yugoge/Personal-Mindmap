@@ -13,7 +13,7 @@ DATABASE_IDS = {
     "Task": "185bdd3556c281499a2cc84e2144fd2c",
     "Dashboard": "185bdd3556c2819ab6d3ec98eb28d44c"
 }
-CODE_BLOCK_ID = '1a0bdd35-56c2-80aa-91ba-f477d5b061ed'
+CODE_BLOCK_ID = '1a0bdd35-56c2-80bf-97f5-cdc66b736b59'
 
 # ✅ Notion API Headers
 HEADERS = {
@@ -32,12 +32,12 @@ def fetch_database_items(database_id):
 area_data = fetch_database_items(DATABASE_IDS["Area"])
 target_data = fetch_database_items(DATABASE_IDS["Target"])
 project_data = fetch_database_items(DATABASE_IDS["Project"])
-task_data = fetch_database_items(DATABASE_IDS["Task"])
+# task_data = fetch_database_items(DATABASE_IDS["Task"])
 
 # ✅ 创建一个映射存储层级关系
 area_map = {}  # 存储 Area -> Target
 target_map = {}  # 存储 Target -> Project
-project_map = {}  # 存储 Project -> Task
+# project_map = {}  # 存储 Project -> Task
 notion_links = {}  # 存储每个元素的 Notion 链接
 
 # ✅ 解析 Notion 数据库条目
@@ -64,8 +64,8 @@ def parse_notion_data(data, parent_map, parent_field):
 # ✅ 解析各个层级的关系
 parse_notion_data(target_data, area_map, "Area")
 parse_notion_data(project_data, target_map, "Target")
-parse_notion_data(task_data, project_map, "Project")
-mapping = {str(area_map): target_map, str(target_map): project_map}
+# parse_notion_data(task_data, project_map, "Project")
+mapping = {str(area_map): target_map} #, str(target_map): project_map}
 
 # ✅ 生成 Mermaid.js 代码
 mermaid_code = "flowchart LR\n"
@@ -77,7 +77,7 @@ def build_mermaid_graph(parent_id, parent_name, child_map, indent=1):
         for child_id, child_name in sorted(child_map[parent_id], key=lambda x: x[1]):
             link = notion_links.get(child_id, "#")  # 获取 Notion 链接
             mermaid_code += f'  {"  " * indent}{parent_id}["{parent_name}"] --> {child_id}["{child_name}"]\n'
-            mermaid_code += f'  {"  " * indent}click {child_id} "{link}"\n'
+            # mermaid_code += f'  {"  " * indent}click {child_id} "{link}"\n'
             try:
                 build_mermaid_graph(child_id, child_name, mapping[str(child_map)], indent + 1)
             except:
@@ -89,7 +89,7 @@ for area in sorted(area_data, key=lambda x: x["properties"]["Name"]["title"][0][
     area_name = area["properties"]["Name"]["title"][0]["text"]["content"]
     notion_links[area_id] = area["url"]  # 存储 Area Notion 链接
     mermaid_code += f'  {area_id}["{area_name}"]\n'
-    mermaid_code += f'  click {area_id} "{notion_links[area_id]}"\n'
+    # mermaid_code += f'  click {area_id} "{notion_links[area_id]}"\n'
     build_mermaid_graph(area_id, area_name, area_map)
 
 # ✅ 将 Mermaid 代码写入文件
@@ -120,3 +120,23 @@ if response.status_code == 200:
     print(f"✅ 代码更新成功！")
 else:
     print(f"❌ 更新失败:", response.text)
+
+# # ✅ 获取 Notion 页面上的所有子块
+# response = requests.get(
+#     f"https://api.notion.com/v1/blocks/{DATABASE_IDS['Dashboard']}/children",
+#     headers=HEADERS
+# )
+
+# # ✅ 解析返回的 JSON 数据
+# data = response.json()
+
+# # ✅ 查找代码块 ID
+# code_block_id = None
+# for block in data.get("results", []):
+#     if block["type"] == "code":
+#         code_block_id = block["id"]
+#         print("✅ 找到代码块 ID:", code_block_id)
+#         break
+
+# if not code_block_id:
+#     print("❌ 没找到代码块，请检查 Notion 页面！")
