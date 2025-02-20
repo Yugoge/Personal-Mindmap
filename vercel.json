@@ -1,0 +1,7 @@
+{
+    "routes": [
+      { "src": "/render/(.*)", "dest": "/api/render.js" },
+      { "src": "/md/(.*)", "dest": "/api/render.js" }
+    ]
+  }
+  
