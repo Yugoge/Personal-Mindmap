@@ -66,18 +66,16 @@ parse_notion_data(task_data, project_map, "Project")
 mapping = {str(area_map): target_map, str(target_map): project_map}
 
 # ✅ 生成 Mermaid.js 代码
-mermaid_code = "graph TD;\n"
+mermaid_code = "flowchart LR;\n"
 
 # 🔹 递归构建树状结构
 def build_mermaid_graph(parent_id, parent_name, child_map, indent=1):
     global mermaid_code
-    print(parent_name, parent_id, child_map)
     if parent_id in child_map:
         for child_id, child_name in sorted(child_map[parent_id], key=lambda x: x[1]):
-            print(parent_name, child_name)
             link = notion_links.get(child_id, "#")  # 获取 Notion 链接
-            mermaid_code += f'  {"  " * indent}"{parent_id}"["{parent_name}"] --> "{child_id}"["{child_name}"]\n'
-            mermaid_code += f'  {"  " * indent}click "{child_id}" "{link}"\n'
+            mermaid_code += f'  {"  " * indent}{parent_id}["{parent_name}"] --> {child_id}["{child_name}"]\n'
+            mermaid_code += f'  {"  " * indent}click {child_id} "{link}"\n'
             try:
                 build_mermaid_graph(child_id, child_name, mapping[str(child_map)], indent + 1)
             except:
@@ -85,11 +83,11 @@ def build_mermaid_graph(parent_id, parent_name, child_map, indent=1):
 
 # 🔹 遍历所有 Areas 并构建树
 for area in sorted(area_data, key=lambda x: x["properties"]["Name"]["title"][0]["text"]["content"]):
-    area_id = area["id"]
+    area_id = area["id"].replace("-", "")  # 移除 ID 中的破折号
     area_name = area["properties"]["Name"]["title"][0]["text"]["content"]
     notion_links[area_id] = area["url"]  # 存储 Area Notion 链接
-    mermaid_code += f'  "{area_id}"["{area_name}"]\n'
-    mermaid_code += f'  click "{area_id}" "{notion_links[area_id]}"\n'
+    mermaid_code += f'  {area_id}["{area_name}"]\n'
+    mermaid_code += f'  click {area_id} "{notion_links[area_id]}"\n'
     build_mermaid_graph(area_id, area_name, area_map)
 
 # ✅ 将 Mermaid 代码写入文件
