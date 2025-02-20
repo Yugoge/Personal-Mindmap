@@ -1,4 +1,5 @@
 import requests
+import os
 import json
 
 # ✅ 你的 Notion API Key
@@ -19,22 +20,11 @@ HEADERS = {
     "Notion-Version": "2022-06-28"
 }
 
-# ✅ 获取 Notion 数据库中的所有条目（处理分页）
+# ✅ 获取 Notion 数据库中的所有条目
 def fetch_database_items(database_id):
     url = f"https://api.notion.com/v1/databases/{database_id}/query"
-    all_items = []
-    has_more = True
-    next_cursor = None
-    while has_more:
-        payload = {"page_size": 100}
-        if next_cursor:
-            payload["start_cursor"] = next_cursor
-        response = requests.post(url, headers=HEADERS, json=payload)
-        data = response.json()
-        all_items.extend(data.get("results", []))
-        has_more = data.get("has_more", False)
-        next_cursor = data.get("next_cursor")
-    return all_items
+    response = requests.post(url, headers=HEADERS)
+    return response.json().get("results", [])
 
 # ✅ 获取所有层级数据
 area_data = fetch_database_items(DATABASE_IDS["Area"])
@@ -42,34 +32,26 @@ target_data = fetch_database_items(DATABASE_IDS["Target"])
 project_data = fetch_database_items(DATABASE_IDS["Project"])
 task_data = fetch_database_items(DATABASE_IDS["Task"])
 
-# ✅ 创建映射存储层级关系
-area_map = {}  # Area -> Target
-target_map = {}  # Target -> Project
-project_map = {}  # Project -> Task
+# ✅ 创建一个映射存储层级关系
+area_map = {}  # 存储 Area -> Target
+target_map = {}  # 存储 Target -> Project
+project_map = {}  # 存储 Project -> Task
 notion_links = {}  # 存储每个元素的 Notion 链接
 
 # ✅ 解析 Notion 数据库条目
 def parse_notion_data(data, parent_map, parent_field):
     for item in data:
-        item_id = item["id"]
-        # 提取名称
-        name_prop = item["properties"]["Name"]["title"]
-        if name_prop and len(name_prop) > 0:
-            if "text" in name_prop[0]:
-                name = name_prop[0]["text"]["content"]
-            elif "mention" in name_prop[0]:
-                name = name_prop[0]["mention"]["date"]["start"]
-            else:
-                name = "Unnamed"
-        else:
-            name = "Unnamed"
-        notion_links[item_id] = item["url"]
+        item_id = item["id"].replace("-", "")  # 移除 ID 中的破折号
+        try:
+            name = item["properties"]["Name"]["title"][0]["text"]["content"]
+        except:
+            name = item["properties"]["Name"]["title"][0]["mention"]["date"]
+        notion_links[item_id] = item["url"]  # 存储 Notion 页面链接
 
         # 获取 Parent 关联项
         parent_id = None
-        parent_relation = item["properties"].get(parent_field, {}).get("relation", [])
-        if parent_relation:
-            parent_id = parent_relation[0]["id"]
+        if item["properties"].get(parent_field) and item["properties"][parent_field]["relation"]:
+            parent_id = item["properties"][parent_field]["relation"][0]["id"].replace("-", "")  # 移除 ID 中的破折号
 
         # 记录层级关系
         if parent_id:
@@ -81,58 +63,37 @@ def parse_notion_data(data, parent_map, parent_field):
 parse_notion_data(target_data, area_map, "Area")
 parse_notion_data(project_data, target_map, "Target")
 parse_notion_data(task_data, project_map, "Project")
+mapping = {str(area_map): target_map, str(target_map): project_map}
 
 # ✅ 生成 Mermaid.js 代码
 mermaid_code = "graph TD;\n"
-nodes_defined = set()  # 跟踪已定义的节点
 
 # 🔹 递归构建树状结构
-def build_mermaid_graph(parent_id, parent_name, current_map, indent=1):
-    global mermaid_code, nodes_defined
-    if parent_id not in current_map:
-        return
-    
-    # 对子项按名称排序
-    children = sorted(current_map[parent_id], key=lambda x: x[1])
-    
-    for child_id, child_name in children:
-        # 定义子节点（如果未定义过）
-        if child_id not in nodes_defined:
-            mermaid_code += f'  {"  " * indent}{child_id}["{child_name}"]\n'
-            mermaid_code += f'  {"  " * indent}click {child_id} "{notion_links[child_id]}"\n'
-            nodes_defined.add(child_id)
-        
-        # 添加连接
-        mermaid_code += f'  {"  " * indent}{parent_id} --> {child_id}\n'
-        
-        # 确定下一层的映射
-        if current_map == area_map:
-            next_map = target_map
-        elif current_map == target_map:
-            next_map = project_map
-        elif current_map == project_map:
-            next_map = task_map
-        else:
-            next_map = None
-        
-        # 递归处理下一层
-        if next_map is not None:
-            build_mermaid_graph(child_id, child_name, next_map, indent + 1)
+def build_mermaid_graph(parent_id, parent_name, child_map, indent=1):
+    global mermaid_code
+    print(parent_name, parent_id, child_map)
+    if parent_id in child_map:
+        for child_id, child_name in sorted(child_map[parent_id], key=lambda x: x[1]):
+            print(parent_name, child_name)
+            link = notion_links.get(child_id, "#")  # 获取 Notion 链接
+            mermaid_code += f'  {"  " * indent}"{parent_id}"["{parent_name}"] --> "{child_id}"["{child_name}"]\n'
+            mermaid_code += f'  {"  " * indent}click "{child_id}" "{link}"\n'
+            try:
+                build_mermaid_graph(child_id, child_name, mapping[str(child_map)], indent + 1)
+            except:
+                pass
 
 # 🔹 遍历所有 Areas 并构建树
-for area in sorted(area_data, key=lambda x: x["properties"]["Name"]["title"][0].get("text", {}).get("content", "")):
+for area in sorted(area_data, key=lambda x: x["properties"]["Name"]["title"][0]["text"]["content"]):
     area_id = area["id"]
-    area_name = area["properties"]["Name"]["title"][0].get("text", {}).get("content", "Unnamed Area")
-    # 定义Area节点
-    if area_id not in nodes_defined:
-        mermaid_code += f'  {area_id}["{area_name}"]\n'
-        mermaid_code += f'  click {area_id} "{notion_links[area_id]}"\n'
-        nodes_defined.add(area_id)
-    # 构建子树
+    area_name = area["properties"]["Name"]["title"][0]["text"]["content"]
+    notion_links[area_id] = area["url"]  # 存储 Area Notion 链接
+    mermaid_code += f'  "{area_id}"["{area_name}"]\n'
+    mermaid_code += f'  click "{area_id}" "{notion_links[area_id]}"\n'
     build_mermaid_graph(area_id, area_name, area_map)
 
 # ✅ 将 Mermaid 代码写入文件
-with open("notion_mermaid_diagram.md", "w", encoding="utf-8") as file:
+with open("notion_mermaid_diagram.md", "w") as file:
     file.write(f"```mermaid\n{mermaid_code}\n```")
 
 print("✅ Mermaid.js 代码已生成！请查看 notion_mermaid_diagram.md")
