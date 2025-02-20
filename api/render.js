@@ -8,12 +8,12 @@ module.exports = async (req, res) => {
     const mdPath = req.query.path || req.url.replace('/md/', '');
     
     // 从GitHub获取Markdown内容
-    const githubRawUrl = `https://raw.githubusercontent.com/${process.env.GITHUB_REPO}/main/${mdPath}`;
+    const githubRawUrl = `https://raw.githubusercontent.com/Yugoge/main/notion_mermaid_diagram.md`;
     const { default: fetch } = await import('node-fetch');
     const mdResponse = await fetch(githubRawUrl);
     const markdown = await mdResponse.text();
 
-    // 过滤mermaid 中的话
+    // 过滤mermaid中的话
     const mermaidCode = markdown.match(/```mermaid([\s\S]*?)```/)[1].trim();
     
     // 前原文数
