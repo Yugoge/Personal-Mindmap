@@ -13,7 +13,7 @@ DATABASE_IDS = {
     "Task": "185bdd3556c281499a2cc84e2144fd2c",
     "Dashboard": "185bdd3556c2819ab6d3ec98eb28d44c"
 }
-CODE_BLOCK_ID = '1a0bdd35-56c2-81cc-ac2e-e050d6c67e50'
+CODE_BLOCK_ID = '1a0bdd35-56c2-80aa-91ba-f477d5b061ed'
 
 # ✅ Notion API Headers
 HEADERS = {
@@ -101,12 +101,6 @@ print("✅ Mermaid.js 代码已生成！请查看 notion_mermaid_diagram.md")
 # ✅ 读取 Mermaid.js 代码
 with open("notion_mermaid_diagram.md", "r") as file:
     mermaid_code = file.read()
-
-# # ✅ 由于 Notion 限制 2000 字符，拆分代码
-# def split_text(text, max_length=2000):
-#     return [text[i:i + max_length] for i in range(0, len(text), max_length)]
-
-# code_blocks = split_text(mermaid_code, 2000)
 
 # ✅ 发送更新请求（更新已有代码块内容）
 payload = {
