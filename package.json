@@ -1,16 +1,16 @@
 {
-    "name": "mermaid-renderer",
-    "version": "1.0.0",
-    "scripts": {
-      "build": "npm install @mermaid-js/mermaid-cli -g && puppeteer --force && echo 'Dependencies installed'"
-    },
-    "dependencies": {
-      "@mermaid-js/mermaid-cli": "^9.3.0",
-      "puppeteer": "^21.9.0", 
-      "node-fetch": "^3.3.2"
-    },
-    "engines": {
-      "node": "18.x"
-    }
+  "name": "mermaid-renderer",
+  "version": "1.0.0",
+  "scripts": {
+    "postinstall": "puppeteer install",
+    "build": "npm install @mermaid-js/mermaid-cli -g && echo 'Dependencies installed'"
+  },
+  "dependencies": {
+    "@mermaid-js/mermaid-cli": "^9.3.0",
+    "puppeteer": "^21.9.0",
+    "node-fetch": "^3.3.2"
+  },
+  "engines": {
+    "node": "18.x"
   }
-  
+}
