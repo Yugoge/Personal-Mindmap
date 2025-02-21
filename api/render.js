@@ -1,3 +1,4 @@
+console.log("✅ Render.js executed! Check logs!");
 const { execSync } = require("child_process");
 const fs = require("fs-extra");
 const path = require("path");
