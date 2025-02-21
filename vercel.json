@@ -1,10 +1,11 @@
 {
   "version": 2,
-  "functions": {
-    "api/render.js": {
-      "runtime": "nodejs18.x"
+  "builds": [
+    {
+      "src": "api/render.js",
+      "use": "@vercel/node@3"
     }
-  },
+  ],
   "routes": [
     {
       "src": "/md/(.*)",
