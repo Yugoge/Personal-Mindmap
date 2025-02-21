@@ -1,11 +1,22 @@
 {
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/render.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["docs/**"]
+      }
+    }
+  ],
   "routes": [
-    { 
+    {
       "src": "/md/(.*)",
       "dest": "/api/render.js",
-      "headers": { "Cache-Control": "public, max-age=3600" }
+      "headers": {
+        "Cache-Control": "public, max-age=3600",
+        "Access-Control-Allow-Origin": "*"
+      }
     }
   ]
 }
-
-  

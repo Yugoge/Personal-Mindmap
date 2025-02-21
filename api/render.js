@@ -14,7 +14,7 @@ module.exports = async (req, res) => {
     const mdPath = req.query.path || requestPath;
     
     // 从GitHub获取Markdown内容
-    const githubRawUrl = `https://raw.githubusercontent.com/Yugoge/Personal-Mindmap/refs/heads/main/docs/notion_mermaid_diagram.md`;
+    const githubRawUrl = `https://raw.githubusercontent.com/Yugoge/Personal-Mindmap/main/docs/notion_mermaid_diagram.md`;
     const { default: fetch } = await import('node-fetch');
     const mdResponse = await fetch(githubRawUrl);
     const markdown = await mdResponse.text();
