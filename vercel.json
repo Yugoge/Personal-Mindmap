@@ -3,7 +3,7 @@
   "routes": [
     {
       "src": "/md/(.*)",
-      "dest": "/api/render?path=$1",
+      "dest": "/api/render.js?path=$1",
       "headers": {
         "Cache-Control": "public, max-age=3600",
         "Access-Control-Allow-Origin": "*"
