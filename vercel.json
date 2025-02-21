@@ -3,13 +3,20 @@
   "builds": [
     {
       "src": "api/render.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["docs/**"]
+      }
     }
   ],
   "routes": [
     {
-      "src": "/docs/(.*)",
-      "dest": "/api/render.js"
+      "src": "/md/(.*)",
+      "dest": "/api/render?path=$1",
+      "headers": {
+        "Cache-Control": "public, max-age=3600",
+        "Access-Control-Allow-Origin": "*"
+      }
     }
   ]
 }
