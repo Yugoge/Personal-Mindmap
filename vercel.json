@@ -5,12 +5,6 @@
       "runtime": "nodejs18.x"
     }
   },
-  "builds": [
-    {
-      "src": "api/render.js",
-      "use": "@vercel/node"
-    }
-  ],
   "routes": [
     {
       "src": "/md/(.*)",
