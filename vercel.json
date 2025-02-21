@@ -1,14 +1,5 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/render.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["docs/**"]
-      }
-    }
-  ],
   "routes": [
     {
       "src": "/md/(.*)",
