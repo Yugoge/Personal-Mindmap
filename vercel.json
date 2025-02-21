@@ -1,7 +1,11 @@
 {
-    "routes": [
-      { "src": "/render/(.*)", "dest": "/api/render.js" },
-      { "src": "/md/(.*)", "dest": "/api/render.js" }
-    ]
-  }
+  "routes": [
+    { 
+      "src": "/md/(.*)",
+      "dest": "/api/render.js",
+      "headers": { "Cache-Control": "public, max-age=3600" }
+    }
+  ]
+}
+
   

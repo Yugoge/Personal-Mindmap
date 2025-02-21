@@ -2,7 +2,7 @@
     "name": "mermaid-renderer",
     "version": "1.0.0",
     "scripts": {
-      "build": "echo 'Building...'"
+      "build": "npm install @mermaid-js/mermaid-cli -g && echo 'Dependencies installed'"
     },
     "dependencies": {
       "@mermaid-js/mermaid-cli": "^9.3.0",
