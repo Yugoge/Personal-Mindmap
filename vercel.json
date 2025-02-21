@@ -2,14 +2,16 @@
   "version": 2,
   "functions": {
     "api/render.js": {
-      "runtime": "@vercel/node@3"
+      "runtime": "nodejs18.x"
     }
   },
-  "routes": [
+  "builds": [
     {
-      "src": "/api/render",
-      "dest": "/api/render.js"
-    },
+      "src": "api/render.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
     {
       "src": "/md/(.*)",
       "dest": "/api/render.js"
