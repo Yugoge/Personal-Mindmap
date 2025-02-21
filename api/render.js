@@ -1,3 +1,5 @@
+process.env.PUPPETEER_EXECUTABLE_PATH = '/usr/bin/chromium';
+execSync(`npx mmdc -i ${inputPath} -o ${outputPath} --puppeteerConfig '{"executablePath":"${process.env.PUPPETEER_EXECUTABLE_PATH}"}'`);
 const { execSync } = require('child_process');
 const fs = require('fs-extra');
 const path = require('path');
